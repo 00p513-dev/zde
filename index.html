@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZugDatenEinsteller 'ZDE' Daten berechnen für TSG BR 101 Expert</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+            color: #E53935;
+            /* Rot */
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #E53935;
+            /* Rot */
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #d32f2f;
+        }
+
+        p {
+            font-size: 18px;
+            text-align: center;
+            color: #333;
+        }
+
+        .zde-daten {
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 id="title">ZugDatenEinsteller 'ZDE' Daten berechnen für TSG BR 101 und IC Steuerwagen - Expert Line Train Sim World</h1>
+        <h2>By TKessel, modified by Amy</h2>
+        <label for="language">Sprache / Language:</label>
+        <select id="language" onchange="changeLanguage()">
+            <option value="de" selected="selected">Deutsch</option>
+            <option value="en">English</option>
+        </select>
+
+        <form id="bremsForm">
+            <label id="ic2_label" for="ic2">Anzahl der Intercitywagen 2. Klasse:</label>
+            <input type="number" id="ic2" value="0" min="0">
+
+            <label id="ic1_label" for="ic1">Anzahl der Intercitywagen 1. Klasse:</label>
+            <input type="number" id="ic1" value="0" min="0">
+
+            <label id="loks_label" for="loks">Anzahl der BR 101 Lokomotiven:</label>
+            <input type="number" id="loks" value="0" min="0">
+
+            <label id="steuerwagen_label" for="steuerwagen">Anzahl der IC Steuerwagen:</label>
+            <input type="number" id="steuerwagen" value="0" min="0">
+
+            <label id="dostos_label" for="dostos">Anzahl der Dostos 2. Klasse:</label>
+            <input type="number" id="dostos" value="0" min="0">
+
+            <label id="vmax_label" for="vmax">VMAX Fahrplan (volle Zehnerstelle):</label>
+            <input type="number" id="vmax" step="10" min="0" value="0">
+
+            <button type="button" onclick="berechneErgebnisse()">Berechnen / Calculate</button>
+        </form>
+
+        <h2 id="ergebnis_title">Ergebnis:</h2>
+        <p id="ergebnis"></p>
+        <p id="zuglaenge"></p>
+        <p class="zde-daten" id="zdeDaten"></p>
+    </div>
+
+    <script>
+        function changeLanguage() {
+            const language = document.getElementById('language').value;
+
+            if (language === "de") {
+                document.getElementById('title').innerText = "'ZDE' Daten berechnen für TSG BR 101 Expert Line";
+                document.getElementById('ic2_label').innerText = "Anzahl der Intercitywagen 2. Klasse:";
+                document.getElementById('ic1_label').innerText = "Anzahl der Intercitywagen 1. Klasse:";
+                document.getElementById('loks_label').innerText = "Anzahl der BR 101 Lokomotiven:";
+                document.getElementById('steuerwagen_label').innerText = "Anzahl der IC Steuerwagen:";
+                document.getElementById('dostos_label').innerText = "Anzahl der Dostos 2. Klasse:";
+                document.getElementById('vmax_label').innerText = "VMAX Fahrplan (volle Zehnerstelle):";
+                document.getElementById('ergebnis_title').innerText = "Ergebnis:";
+            } else {
+                document.getElementById('title').innerText = "Calculate 'ZDE' Data for TSG BR 101";
+                document.getElementById('ic2_label').innerText = "Number of Intercity Carriages 2nd Class:";
+                document.getElementById('ic1_label').innerText = "Number of Intercity Carriages 1st Class:";
+                document.getElementById('loks_label').innerText = "Number of BR 101 Locomotives:";
+                document.getElementById('steuerwagen_label').innerText = "Number of IC Control Cars:";
+                document.getElementById('dostos_label').innerText = "Number of Dostos 2nd Class:";
+                document.getElementById('vmax_label').innerText = "VMAX Schedule (full tens):";
+                document.getElementById('ergebnis_title').innerText = "Result:";
+            }
+        }
+
+        function berechneErgebnisse() {
+            const anzahlIC2 = parseInt(document.getElementById('ic2').value);
+            const anzahlIC1 = parseInt(document.getElementById('ic1').value);
+            const anzahlLoks = parseInt(document.getElementById('loks').value);
+            const anzahlSteuerwagen = parseInt(document.getElementById('steuerwagen').value);
+            const anzahlDostos = parseInt(document.getElementById('dostos').value);
+            const vmax = parseInt(document.getElementById('vmax').value);
+
+            const bremsgewichtIC2 = 107;
+            const bremsgewichtIC1 = 108;
+            const bremsgewichtLoks = 168;
+            const bremsgewichtSteuerwagen = 90;
+            const bremsgewichtDostos = 125;
+
+            const zuggewichtIC2 = 51;
+            const zuggewichtIC1 = 51;
+            const zuggewichtLoks = 84;
+            const zuggewichtSteuerwagen = 53;
+            const zuggewichtDostos = 58;
+
+            const laengeIC2 = 26.4;
+            const laengeIC1 = 26.4;
+            const laengeLoks = 19.1;
+            const laengeSteuerwagen = 26.4;
+            const laengeDostos = 26.8;
+
+            const gesamtesBremsgewicht = (anzahlIC2 * bremsgewichtIC2) + (anzahlIC1 * bremsgewichtIC1) +
+                (anzahlLoks * bremsgewichtLoks) + (anzahlSteuerwagen * bremsgewichtSteuerwagen) +
+                (anzahlDostos * bremsgewichtDostos);
+
+            const gesamtgewicht = (anzahlIC2 * zuggewichtIC2) + (anzahlIC1 * zuggewichtIC1) +
+                (anzahlLoks * zuggewichtLoks) + (anzahlSteuerwagen * zuggewichtSteuerwagen) +
+                (anzahlDostos * zuggewichtDostos);
+
+            const gesamtlaenge = (anzahlIC2 * laengeIC2) + (anzahlIC1 * laengeIC1) +
+                (anzahlLoks * laengeLoks) + (anzahlSteuerwagen * laengeSteuerwagen) +
+                (anzahlDostos * laengeDostos);
+
+            const bremshundertstel = (gesamtesBremsgewicht * 100) / gesamtgewicht;
+
+            // ZDE Daten Berechnung
+            let zdeBRH;
+            if (bremshundertstel <= 65) {
+                zdeBRH = "050";
+            } else if (bremshundertstel <= 75) {
+                zdeBRH = "070";
+            } else if (bremshundertstel <= 95) {
+                zdeBRH = "080";
+            } else if (bremshundertstel <= 110) {
+                zdeBRH = "100";
+            } else if (bremshundertstel <= 134) {
+                zdeBRH = "120";
+            } else if (bremshundertstel <= 144) {
+                zdeBRH = "130";
+            } else if (bremshundertstel <= 162) {
+                zdeBRH = "140";
+            } else if (bremshundertstel <= 183) {
+                zdeBRH = "150";
+            } else if (bremshundertstel <= 205) {
+                zdeBRH = "180";
+            } else if (bremshundertstel <= 227) {
+                zdeBRH = "200";
+            } else if (bremshundertstel <= 250) {
+                zdeBRH = "220";
+            } else {
+                zdeBRH = "Unbekannt";
+            }
+
+            // Zuglänge aufrunden
+            const zuglaengeAufgerundet = Math.ceil(gesamtlaenge / 10) * 10;
+
+            // BRH, ZL und VMZ in gewünschtem Format
+            const zdeBRHFormatted = `${zdeBRH.slice(0, -1)}(${zdeBRH.slice(-1)})`;
+            const zuglaengeFormatted = `${Math.floor(zuglaengeAufgerundet / 10)}(${zuglaengeAufgerundet % 10})`;
+            const vmaxFormatted = `${Math.floor(vmax / 10)}(${vmax % 10})`;
+
+            const language = document.getElementById('language').value;
+            if (language === "de") {
+                document.getElementById('ergebnis').innerText = `Bremshundertstel: ${bremshundertstel.toFixed(2)}`;
+                document.getElementById('zuglaenge').innerText = `Zuglänge: ${gesamtlaenge.toFixed(2)} Meter`;
+                document.getElementById('zdeDaten').innerText = `ZDE Daten:\n\nBRA 9 BRH ${zdeBRHFormatted} ZL ${zuglaengeFormatted} VMZ ${vmaxFormatted}`;
+            } else {
+                document.getElementById('ergebnis').innerText = `Braking Percentages: ${bremshundertstel.toFixed(2)}`;
+                document.getElementById('zuglaenge').innerText = `Train Length: ${gesamtlaenge.toFixed(2)} meters`;
+                document.getElementById('zdeDaten').innerText = `ZDE Data:\n\nBRA 9 BRH ${zdeBRHFormatted} ZL ${zuglaengeFormatted} VMZ ${vmaxFormatted}`;
+            }
+        }
+    </script>
+</body>
+
+</html>
